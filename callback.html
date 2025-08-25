@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Complete</title>
+    <!-- Use Tailwind CSS for a clean, modern look -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for a more modern feel */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Main container for the message box -->
+    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-lg w-full text-center transform transition-all duration-300 scale-95 hover:scale-100">
+
+        <!-- Header and icon -->
+        <div class="flex flex-col items-center mb-6">
+            <svg class="w-16 h-16 text-green-500 mb-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <h1 class="text-3xl font-bold text-gray-800">Authentication Complete!</h1>
+        </div>
+        
+        <!-- Instructions for the user -->
+        <p class="text-lg text-gray-700 mb-6">
+            The final authentication URL has been automatically copied to your clipboard.
+            <br>
+            Please switch back to your **Claude desktop application** and **paste** the URL into the chat to complete the login process.
+        </p>
+
+        <!-- Loading spinner and message -->
+        <div id="status-message" class="flex items-center justify-center text-gray-600 space-x-2">
+            <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p>Processing...</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Use a hidden input element to copy text to the clipboard
+        function copyToClipboard(text) {
+            const input = document.createElement('input');
+            input.setAttribute('value', text);
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+        }
+
+        // Main logic to run on page load
+        window.onload = function() {
+            // Get URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+
+            const statusMessage = document.getElementById('status-message');
+
+            if (code && state) {
+                // Construct the final URL to be pasted into the Claude app
+                // IMPORTANT: The domain MUST match what your MCP tool expects, which is claude.ai/new
+                const finalUrl = `https://claude.ai/new?code=${encodeURIComponent(code)}&session_state=${encodeURIComponent(state)}`;
+
+                try {
+                    copyToClipboard(finalUrl);
+                    statusMessage.innerHTML = `
+                        <p class="text-green-600 font-semibold flex items-center space-x-2">
+                            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                            <span>URL successfully copied!</span>
+                        </p>
+                    `;
+                } catch (err) {
+                    console.error('Failed to copy URL to clipboard:', err);
+                    statusMessage.innerHTML = `
+                        <p class="text-red-600 font-semibold flex items-center space-x-2">
+                            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Error: Could not copy URL. Please copy it manually.</span>
+                        </p>
+                    `;
+                    // Fallback to displaying the URL for manual copy
+                    const urlDisplay = document.createElement('div');
+                    urlDisplay.className = "mt-4 p-4 bg-gray-100 rounded-lg break-all text-sm";
+                    urlDisplay.textContent = finalUrl;
+                    document.querySelector('.bg-white').appendChild(urlDisplay);
+                }
+            } else {
+                statusMessage.innerHTML = `
+                    <p class="text-red-600 font-semibold flex items-center space-x-2">
+                        <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                        <span>Error: Missing authentication code.</span>
+                    </p>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>
